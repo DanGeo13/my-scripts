@@ -1,0 +1,832 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Classroom Automator | Dashboard</title>
+  <meta name="application-name" content="Classroom Automator" />
+  <link rel="icon" type="image/png" href="https://drive.google.com/uc?export=view&id=1ttN8ImoZcLRBuhD9fs_a2Qd53zhgza9Z" />
+  <script>
+    (function setupBrandingMeta_() {
+      var icon = "https://drive.google.com/uc?export=view&id=1ttN8ImoZcLRBuhD9fs_a2Qd53zhgza9Z";
+      function ensureLink(rel, href) {
+        var el = document.head.querySelector("link[rel='" + rel + "']");
+        if (!el) {
+          el = document.createElement('link');
+          el.rel = rel;
+          document.head.appendChild(el);
+        }
+        el.href = href;
+      }
+      ensureLink('icon', icon);
+      ensureLink('apple-touch-icon', icon);
+      var manifest = {
+        name: "Classroom Automator",
+        short_name: "Automator",
+        start_url: ".",
+        display: "standalone",
+        background_color: "#f5f5f5",
+        theme_color: "#1f5ea8",
+        icons: [{ src: icon, sizes: "192x192", type: "image/png", purpose: "any maskable" }]
+      };
+      ensureLink('manifest', "data:application/manifest+json," + encodeURIComponent(JSON.stringify(manifest)));
+    })();
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      --cf-bg: #F8FAFC;
+      --cf-bg-glow-a: rgba(99, 102, 241, 0.14);
+      --cf-bg-glow-b: rgba(16, 185, 129, 0.11);
+      --cf-surface: rgba(255, 255, 255, 0.70);
+      --cf-surface-strong: rgba(255, 255, 255, 0.88);
+      --cf-primary: #6366F1;
+      --cf-primary-soft: rgba(99, 102, 241, 0.14);
+      --cf-success: #10B981;
+      --cf-warning: #F59E0B;
+      --cf-border: rgba(226, 232, 240, 0.80);
+      --cf-text: #0F172A;
+      --cf-text-muted: #475569;
+      --cf-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+      --cf-shadow-hover: 0 18px 40px -12px rgba(15, 23, 42, 0.15);
+      --cf-blur: 16px;
+
+      --cf-space-1: 0.25rem;
+      --cf-space-2: 0.5rem;
+      --cf-space-3: 0.75rem;
+      --cf-space-4: 1rem;
+      --cf-space-5: 1.25rem;
+      --cf-space-6: 1.5rem;
+      --cf-space-8: 2rem;
+      --cf-space-10: 2.5rem;
+      --cf-space-12: 3rem;
+
+      --cf-radius-sm: 0.5rem;
+      --cf-radius-md: 0.75rem;
+      --cf-radius-lg: 1rem;
+      --cf-radius-xl: 1.25rem;
+      --cf-radius-pill: 9999px;
+
+      --cf-sidebar-w: 16.25rem;
+      --cf-topbar-h: 4.25rem;
+      --cf-transition: 300ms;
+      --cf-spring: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    body.dark {
+      --cf-bg: #0F172A;
+      --cf-bg-glow-a: rgba(99, 102, 241, 0.26);
+      --cf-bg-glow-b: rgba(16, 185, 129, 0.18);
+      --cf-surface: rgba(15, 23, 42, 0.62);
+      --cf-surface-strong: rgba(15, 23, 42, 0.82);
+      --cf-primary: #818CF8;
+      --cf-primary-soft: rgba(129, 140, 248, 0.24);
+      --cf-success: #34D399;
+      --cf-warning: #FBBF24;
+      --cf-border: rgba(148, 163, 184, 0.30);
+      --cf-text: #E2E8F0;
+      --cf-text-muted: #94A3B8;
+      --cf-shadow: 0 18px 38px -16px rgba(2, 6, 23, 0.75);
+      --cf-shadow-hover: 0 24px 48px -18px rgba(2, 6, 23, 0.9);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--cf-text);
+      background: var(--cf-bg);
+      transition: background-color var(--cf-transition) ease, color var(--cf-transition) ease;
+      overflow-x: hidden;
+    }
+
+    .cf-app-bg {
+      min-height: 100vh;
+      width: 100%;
+      background:
+        radial-gradient(90rem 60rem at -10% -20%, var(--cf-bg-glow-a) 0%, rgba(0, 0, 0, 0) 60%),
+        radial-gradient(65rem 45rem at 105% 10%, var(--cf-bg-glow-b) 0%, rgba(0, 0, 0, 0) 58%),
+        var(--cf-bg);
+      padding: var(--cf-space-6);
+      transition: background var(--cf-transition) ease;
+    }
+
+    .cf-shell {
+      max-width: 120rem;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: var(--cf-sidebar-w) minmax(0, 1fr);
+      gap: var(--cf-space-6);
+      align-items: start;
+    }
+
+    .cf-main-shell {
+      width: 100%;
+      max-width: 96rem;
+      display: grid;
+      gap: var(--cf-space-6);
+    }
+
+    .cf-card {
+      background: var(--cf-surface);
+      border: 1px solid var(--cf-border);
+      border-radius: var(--cf-radius-xl);
+      backdrop-filter: blur(var(--cf-blur));
+      -webkit-backdrop-filter: blur(var(--cf-blur));
+      box-shadow: var(--cf-shadow);
+      transition:
+        transform var(--cf-transition) var(--cf-spring),
+        box-shadow var(--cf-transition) ease,
+        background-color var(--cf-transition) ease,
+        border-color var(--cf-transition) ease;
+    }
+
+    .cf-hover-spring:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--cf-shadow-hover);
+    }
+
+    .cf-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--cf-space-2);
+      border-radius: var(--cf-radius-pill);
+      padding: var(--cf-space-1) var(--cf-space-3);
+      border: 1px solid var(--cf-border);
+      background: var(--cf-surface-strong);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--cf-text-muted);
+      white-space: nowrap;
+    }
+
+    .cf-pill-success {
+      color: var(--cf-success);
+      border-color: color-mix(in srgb, var(--cf-success) 45%, var(--cf-border));
+      background: color-mix(in srgb, var(--cf-success) 14%, var(--cf-surface-strong));
+    }
+
+    .cf-pill-warning {
+      color: var(--cf-warning);
+      border-color: color-mix(in srgb, var(--cf-warning) 45%, var(--cf-border));
+      background: color-mix(in srgb, var(--cf-warning) 14%, var(--cf-surface-strong));
+    }
+
+    .cf-sidebar {
+      min-height: calc(100vh - (var(--cf-space-6) * 2));
+      padding: var(--cf-space-5);
+      position: sticky;
+      top: var(--cf-space-6);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: var(--cf-space-6);
+    }
+
+    .cf-logo-wrap {
+      display: grid;
+      gap: var(--cf-space-2);
+    }
+
+    .cf-logo-title {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .cf-logo-sub {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--cf-text-muted);
+    }
+
+    .cf-nav {
+      display: grid;
+      gap: var(--cf-space-2);
+      align-content: start;
+    }
+
+    .cf-nav-btn,
+    .cf-theme-btn,
+    .cf-cta {
+      width: 100%;
+      border: 1px solid var(--cf-border);
+      border-radius: var(--cf-radius-md);
+      background: var(--cf-surface-strong);
+      color: var(--cf-text);
+      font: inherit;
+      cursor: pointer;
+      padding: 0.7rem var(--cf-space-4);
+      text-align: left;
+      transition: border-color var(--cf-transition) ease, background-color var(--cf-transition) ease, transform 180ms ease;
+    }
+
+    .cf-nav-btn:hover,
+    .cf-theme-btn:hover,
+    .cf-cta:hover {
+      border-color: var(--cf-primary);
+      transform: translateY(-1px);
+    }
+
+    .cf-nav-btn.is-active {
+      background: var(--cf-primary-soft);
+      border-color: var(--cf-primary);
+      color: var(--cf-primary);
+      font-weight: 600;
+    }
+
+    .cf-sidebar-footer {
+      display: grid;
+      gap: var(--cf-space-2);
+    }
+
+    .cf-topbar {
+      min-height: var(--cf-topbar-h);
+      padding: var(--cf-space-4) var(--cf-space-5);
+      display: flex;
+      gap: var(--cf-space-4);
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .cf-topbar-title {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .cf-topbar-sub {
+      margin: var(--cf-space-1) 0 0;
+      color: var(--cf-text-muted);
+      font-size: 0.9rem;
+    }
+
+    .cf-pulse {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--cf-success);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--cf-success) 60%, transparent);
+      animation: cf-glow 2s infinite;
+      flex: 0 0 auto;
+    }
+
+    @keyframes cf-glow {
+      0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cf-success) 55%, transparent); }
+      70% { box-shadow: 0 0 0 10px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
+
+    .cf-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--cf-space-4);
+    }
+
+    .cf-metric {
+      padding: var(--cf-space-4) var(--cf-space-5);
+      display: grid;
+      gap: var(--cf-space-1);
+      min-height: 6rem;
+    }
+
+    .cf-metric-label {
+      margin: 0;
+      font-size: 0.8rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--cf-text-muted);
+      font-weight: 600;
+    }
+
+    .cf-metric-value {
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .cf-main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(18rem, 1fr);
+      gap: var(--cf-space-4);
+      align-items: start;
+    }
+
+    .cf-section {
+      padding: var(--cf-space-5);
+      display: grid;
+      gap: var(--cf-space-4);
+    }
+
+    .cf-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--cf-space-3);
+      flex-wrap: wrap;
+    }
+
+    .cf-section-title {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .cf-section-sub {
+      margin: var(--cf-space-1) 0 0;
+      color: var(--cf-text-muted);
+      font-size: 0.875rem;
+    }
+
+    .cf-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--cf-space-4);
+    }
+
+    .cf-course {
+      padding: var(--cf-space-4);
+      display: grid;
+      gap: var(--cf-space-3);
+      border-radius: var(--cf-radius-lg);
+      border: 1px solid var(--cf-border);
+      background: var(--cf-surface-strong);
+    }
+
+    .cf-course-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--cf-space-3);
+    }
+
+    .cf-course-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .cf-course-meta {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--cf-text-muted);
+    }
+
+    .cf-cta {
+      text-align: center;
+      font-weight: 600;
+      background: color-mix(in srgb, var(--cf-primary) 15%, var(--cf-surface-strong));
+      border-color: color-mix(in srgb, var(--cf-primary) 50%, var(--cf-border));
+      color: var(--cf-primary);
+    }
+
+    .cf-timetable-body {
+      display: grid;
+      gap: var(--cf-space-3);
+    }
+
+    .cf-next-slot {
+      border-radius: var(--cf-radius-lg);
+      border: 1px solid var(--cf-border);
+      background: var(--cf-surface-strong);
+      padding: var(--cf-space-4);
+      display: grid;
+      gap: var(--cf-space-2);
+    }
+
+    .cf-next-title {
+      margin: 0;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-weight: 600;
+      color: var(--cf-text-muted);
+    }
+
+    .cf-next-time {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .cf-next-meta {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--cf-text-muted);
+    }
+
+    .cf-loading {
+      display: grid;
+      gap: var(--cf-space-3);
+    }
+
+    .cf-skeleton {
+      height: 1rem;
+      border-radius: var(--cf-radius-pill);
+      background: linear-gradient(90deg,
+        color-mix(in srgb, var(--cf-border) 65%, transparent) 0%,
+        color-mix(in srgb, var(--cf-border) 35%, transparent) 50%,
+        color-mix(in srgb, var(--cf-border) 65%, transparent) 100%);
+      background-size: 200% 100%;
+      animation: cf-shimmer 1.4s infinite linear;
+    }
+
+    @keyframes cf-shimmer {
+      from { background-position: 200% 0; }
+      to { background-position: -200% 0; }
+    }
+
+    .cf-empty,
+    .cf-error {
+      margin: 0;
+      border-radius: var(--cf-radius-md);
+      border: 1px solid var(--cf-border);
+      padding: var(--cf-space-4);
+      background: var(--cf-surface-strong);
+      color: var(--cf-text-muted);
+      font-size: 0.9rem;
+    }
+
+    .cf-error {
+      border-color: color-mix(in srgb, var(--cf-warning) 40%, var(--cf-border));
+      color: var(--cf-warning);
+    }
+
+    .cf-footer-note {
+      margin: 0;
+      font-size: 0.75rem;
+      color: var(--cf-text-muted);
+    }
+
+    @media (max-width: 72rem) {
+      .cf-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .cf-sidebar {
+        position: static;
+        min-height: auto;
+      }
+
+      .cf-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .cf-main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 52rem) {
+      .cf-app-bg { padding: var(--cf-space-4); }
+      .cf-metrics { grid-template-columns: 1fr; }
+      .cf-grid { grid-template-columns: 1fr; }
+      .cf-nav { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cf-app-bg">
+    <div class="cf-shell">
+      <aside class="cf-sidebar cf-card">
+        <div class="cf-logo-wrap">
+          <h1 class="cf-logo-title">Classroom Automator</h1>
+          <p class="cf-logo-sub">Automation Dashboard</p>
+        </div>
+
+        <nav class="cf-nav" aria-label="Primary">
+          <button class="cf-nav-btn is-active" type="button" data-page="dashboard">Dashboard</button>
+          <button class="cf-nav-btn" type="button" data-page="sequencer">Sequencer</button>
+          <button class="cf-nav-btn" type="button" data-page="index" data-tab="timetable">Timetable</button>
+          <button class="cf-nav-btn" type="button" data-page="index" data-tab="logs">Logs</button>
+        </nav>
+
+        <div class="cf-sidebar-footer">
+          <button id="themeToggleBtn" class="cf-theme-btn" type="button">Toggle Theme</button>
+          <p id="themeNote" class="cf-footer-note"></p>
+        </div>
+      </aside>
+
+      <main class="cf-main-shell">
+        <header class="cf-topbar cf-card">
+          <div>
+            <h2 class="cf-topbar-title">Dashboard Overview</h2>
+            <p class="cf-topbar-sub">Classroom workload, timetable availability, and publish automation at a glance.</p>
+          </div>
+          <div id="publishStatusBadge" class="cf-pill cf-pill-warning">
+            <span class="cf-pulse" aria-hidden="true"></span>
+            <span id="publishStatusText">Checking publish engine...</span>
+          </div>
+        </header>
+
+        <section class="cf-metrics">
+          <article class="cf-card cf-metric cf-hover-spring">
+            <p class="cf-metric-label">Total Courses</p>
+            <p id="metricTotalCourses" class="cf-metric-value">-</p>
+          </article>
+          <article class="cf-card cf-metric cf-hover-spring">
+            <p class="cf-metric-label">Active Courses</p>
+            <p id="metricActiveCourses" class="cf-metric-value">-</p>
+          </article>
+          <article class="cf-card cf-metric cf-hover-spring">
+            <p class="cf-metric-label">Archived Courses</p>
+            <p id="metricArchivedCourses" class="cf-metric-value">-</p>
+          </article>
+        </section>
+
+        <section class="cf-main-grid">
+          <article class="cf-card cf-section cf-hover-spring">
+            <div class="cf-section-head">
+              <div>
+                <h3 class="cf-section-title">Course Gallery</h3>
+                <p class="cf-section-sub">Manage sequencing and publishing by course.</p>
+              </div>
+            </div>
+            <div id="courseGallery" class="cf-grid">
+              <div class="cf-loading" aria-hidden="true">
+                <div class="cf-skeleton"></div>
+                <div class="cf-skeleton"></div>
+                <div class="cf-skeleton"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="cf-card cf-section cf-hover-spring">
+            <div class="cf-section-head">
+              <div>
+                <h3 class="cf-section-title">Timetable Integration</h3>
+                <p id="timetableHeader" class="cf-section-sub">Loading timetable summary...</p>
+              </div>
+              <span id="availabilityPill" class="cf-pill">Pending</span>
+            </div>
+            <div id="timetableBody" class="cf-timetable-body">
+              <div class="cf-loading" aria-hidden="true">
+                <div class="cf-skeleton"></div>
+                <div class="cf-skeleton"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function initThemeEarly() {
+      try {
+        var stored = localStorage.getItem('cf-theme');
+        if (stored === 'dark') document.body.classList.add('dark');
+      } catch (err) {}
+    })();
+
+    function getBaseUrl_() {
+      return window.location.href.split('?')[0];
+    }
+
+    function navigateToPage_(page, params) {
+      var url = getBaseUrl_() + '?page=' + encodeURIComponent(page);
+      if (params) {
+        Object.keys(params).forEach(function(key) {
+          url += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
+        });
+      }
+      window.location.href = url;
+    }
+
+    function initSidebarNav_() {
+      var navButtons = Array.prototype.slice.call(document.querySelectorAll('.cf-nav-btn'));
+      navButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var page = btn.getAttribute('data-page') || 'index';
+          var tab = btn.getAttribute('data-tab');
+          if (page === 'dashboard') return;
+          if (tab) {
+            navigateToPage_('index', { tab: tab });
+            return;
+          }
+          navigateToPage_(page);
+        });
+      });
+    }
+
+    function applyTheme_(theme) {
+      var normalized = theme === 'dark' ? 'dark' : 'light';
+      document.body.classList.toggle('dark', normalized === 'dark');
+      try { localStorage.setItem('cf-theme', normalized); } catch (err) {}
+
+      var toggleBtn = document.getElementById('themeToggleBtn');
+      var note = document.getElementById('themeNote');
+      if (toggleBtn) {
+        toggleBtn.textContent = normalized === 'dark' ? 'Use Light Theme' : 'Use Dark Theme';
+      }
+      if (note) {
+        note.textContent = 'Theme: ' + (normalized === 'dark' ? 'Dark' : 'Light');
+      }
+    }
+
+    function initThemeToggle_() {
+      var stored = null;
+      try { stored = localStorage.getItem('cf-theme'); } catch (err) {}
+      applyTheme_(stored === 'dark' ? 'dark' : 'light');
+
+      var toggleBtn = document.getElementById('themeToggleBtn');
+      if (!toggleBtn) return;
+      toggleBtn.addEventListener('click', function() {
+        var next = document.body.classList.contains('dark') ? 'light' : 'dark';
+        applyTheme_(next);
+      });
+    }
+
+    function setCourseMetrics_(courses) {
+      var total = Array.isArray(courses) ? courses.length : 0;
+      var active = 0;
+      var archived = 0;
+
+      (courses || []).forEach(function(course) {
+        if (String(course.courseState || '').toUpperCase() === 'ARCHIVED') archived++;
+        else active++;
+      });
+
+      var totalEl = document.getElementById('metricTotalCourses');
+      var activeEl = document.getElementById('metricActiveCourses');
+      var archivedEl = document.getElementById('metricArchivedCourses');
+      if (totalEl) totalEl.textContent = String(total);
+      if (activeEl) activeEl.textContent = String(active);
+      if (archivedEl) archivedEl.textContent = String(archived);
+    }
+
+    function renderCourses(courses) {
+      var host = document.getElementById('courseGallery');
+      if (!host) return;
+
+      var list = Array.isArray(courses) ? courses : [];
+      setCourseMetrics_(list);
+
+      if (!list.length) {
+        host.innerHTML = '<p class="cf-empty">No Classroom courses returned. Check Classroom permissions and try refresh.</p>';
+        return;
+      }
+
+      host.innerHTML = '';
+      list.forEach(function(course) {
+        var state = String(course.courseState || 'ACTIVE').toUpperCase();
+        var stateClass = state === 'ARCHIVED' ? 'cf-pill-warning' : 'cf-pill-success';
+
+        var card = document.createElement('article');
+        card.className = 'cf-course cf-hover-spring';
+
+        var header = document.createElement('div');
+        header.className = 'cf-course-head';
+
+        var title = document.createElement('h4');
+        title.className = 'cf-course-title';
+        title.textContent = course.name || 'Untitled course';
+
+        var pill = document.createElement('span');
+        pill.className = 'cf-pill ' + stateClass;
+        pill.textContent = state;
+
+        header.appendChild(title);
+        header.appendChild(pill);
+
+        var section = document.createElement('p');
+        section.className = 'cf-course-meta';
+        section.textContent = (course.section || 'No section') + ' • ' + (course.room || 'No room');
+
+        var button = document.createElement('button');
+        button.className = 'cf-cta';
+        button.type = 'button';
+        button.textContent = 'Manage Sequence';
+        button.addEventListener('click', function() {
+          navigateToPage_('sequencer', { classId: course.id });
+        });
+
+        card.appendChild(header);
+        card.appendChild(section);
+        card.appendChild(button);
+        host.appendChild(card);
+      });
+    }
+
+    function renderCoursesError(err) {
+      var host = document.getElementById('courseGallery');
+      if (!host) return;
+      var msg = err && err.message ? err.message : String(err || 'Unknown error');
+      host.innerHTML = '<p class="cf-error">Failed to load classrooms: ' + escapeHtml_(msg) + '</p>';
+      setCourseMetrics_([]);
+    }
+
+    function renderTimetable(data) {
+      var header = document.getElementById('timetableHeader');
+      var body = document.getElementById('timetableBody');
+      var pill = document.getElementById('availabilityPill');
+      if (!header || !body || !pill) return;
+
+      if (!data || data.success === false) {
+        header.textContent = 'Timetable unavailable';
+        body.innerHTML = '<p class="cf-error">Could not load timetable summary.</p>';
+        pill.className = 'cf-pill cf-pill-warning';
+        pill.textContent = 'Unavailable';
+        return;
+      }
+
+      var week = data.currentWeek ? 'Week ' + data.currentWeek : 'Week ?';
+      var dateText = data.today || 'No date';
+      header.textContent = week + ' - ' + dateText;
+
+      var next = data.nextAvailable || {};
+      if (!next.available) {
+        body.innerHTML = '<p class="cf-empty">No FREE slot found in the current cycle.</p>';
+        pill.className = 'cf-pill cf-pill-warning';
+        pill.textContent = 'No Slot';
+        return;
+      }
+
+      var slotTitle = next.slot ? escapeHtml_(next.slot) + ' • ' : '';
+      var weekType = next.weekType ? 'Week ' + escapeHtml_(next.weekType) : 'Week ?';
+      body.innerHTML = '' +
+        '<div class="cf-next-slot">' +
+          '<p class="cf-next-title">Next Available Slot</p>' +
+          '<p class="cf-next-time">' + escapeHtml_(next.time || 'Time unavailable') + '</p>' +
+          '<p class="cf-next-meta">' + slotTitle + escapeHtml_(next.day || 'Day unavailable') + ' • ' + weekType + '</p>' +
+        '</div>';
+
+      pill.className = 'cf-pill cf-pill-success';
+      pill.textContent = 'Available';
+    }
+
+    function renderTimetableError(err) {
+      renderTimetable({ success: false, error: err && err.message ? err.message : String(err || '') });
+    }
+
+    function renderPublishStatus(data) {
+      var badge = document.getElementById('publishStatusBadge');
+      var text = document.getElementById('publishStatusText');
+      if (!badge || !text) return;
+
+      var active = !!(data && data.success && data.active);
+      badge.className = 'cf-pill ' + (active ? 'cf-pill-success' : 'cf-pill-warning');
+      text.textContent = active ? 'Publish Engine Active' : 'Publish Engine Inactive';
+    }
+
+    function renderPublishStatusError() {
+      renderPublishStatus({ success: false, active: false });
+    }
+
+    function escapeHtml_(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function loadDashboard_() {
+      if (!(window.google && google.script && google.script.run)) {
+        renderCoursesError('google.script.run unavailable');
+        renderTimetableError('google.script.run unavailable');
+        renderPublishStatusError();
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(renderCourses)
+        .withFailureHandler(renderCoursesError)
+        .apiListCourses();
+
+      google.script.run
+        .withSuccessHandler(renderTimetable)
+        .withFailureHandler(renderTimetableError)
+        .apiGetDashboardTimetableSummary();
+
+      google.script.run
+        .withSuccessHandler(renderPublishStatus)
+        .withFailureHandler(renderPublishStatusError)
+        .apiGetPublishEngineStatus();
+    }
+
+    window.addEventListener('load', function() {
+      initSidebarNav_();
+      initThemeToggle_();
+      loadDashboard_();
+    });
+  </script>
+</body>
+</html>

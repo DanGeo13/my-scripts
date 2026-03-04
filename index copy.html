@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Classroom Sequence Architect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Material+Icons&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f4f6fb;
+        --panel: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --stroke: #dbe2ee;
+        --stroke2: #eef2f8;
+        --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --danger: #b91c1c;
+        --dangerBg: #fee2e2;
+        --mdc-theme-primary: #1a73e8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Manrope', sans-serif;
+        background: radial-gradient(circle at top right, #e7eefc 0%, var(--bg) 42%, #f8fafc 100%);
+        color: var(--text);
+      }
+
+      .shell {
+        min-height: 100vh;
+        width: min(1200px, 100%);
+        margin: 0 auto;
+        padding: 18px 16px 40px;
+      }
+
+      .header {
+        background: var(--panel);
+        border: 1px solid var(--stroke);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .titleWrap h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .tabsWrap {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        margin-top: 12px;
+        backdrop-filter: blur(10px);
+        padding-top: 8px;
+      }
+
+      .tabs {
+        position: relative;
+        display: flex;
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        padding: 0 6px;
+      }
+
+      .tab {
+        border: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        padding: 10px 14px;
+        border-bottom: 2px solid transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .tab.active {
+        border-bottom-color: var(--mdc-theme-primary);
+        color: var(--mdc-theme-primary);
+      }
+
+      #list {
+        margin-top: 12px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .courseGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 12px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--stroke);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .courseHero {
+        color: #fff;
+        padding: 14px;
+      }
+
+      .courseHeroTitle {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .courseHeroSub {
+        margin-top: 4px;
+        font-size: 12px;
+        opacity: 0.92;
+      }
+
+      .cardBody {
+        padding: 12px 14px 14px;
+      }
+
+      .period {
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+        padding: 10px;
+        margin-top: 8px;
+        background: #f9fbff;
+      }
+
+      .periodTop {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .periodTopic {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .periodProgress { height: 3px; background: var(--stroke2); border-radius: 2px; margin-top: 6px; }
+      .periodProgressBar { height: 100%; background: var(--mdc-theme-primary); border-radius: 2px; transition: width 60s linear; }
+
+      .btn,
+      .btnSmall {
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+        background: var(--panel);
+        color: var(--text);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .btn {
+        padding: 10px 14px;
+        font-size: 13px;
+      }
+
+      .btnSmall {
+        padding: 7px 10px;
+        font-size: 12px;
+      }
+
+      .btn.primary,
+      .btnSmall.primary {
+        background: var(--mdc-theme-primary);
+        border-color: var(--mdc-theme-primary);
+        color: #fff;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .courseActions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .select {
+        border: 1px solid var(--stroke);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .line {
+        height: 1px;
+        background: var(--stroke2);
+        margin: 10px 0;
+      }
+
+      .lessonItem {
+        padding: 12px;
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+        background: #fff;
+        margin-bottom: 10px;
+      }
+
+      .lessonMeta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      .emptyState { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 20px; color: var(--muted); text-align: center; }
+
+      .drawerOverlay {
+        position: fixed;
+        inset: 0;
+        backdrop-filter: blur(4px);
+        background: rgba(17,24,39,.22);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .22s ease;
+        z-index: 100;
+      }
+
+      .drawerOverlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .drawer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: min(560px, 96vw);
+        background: #fff;
+        border-left: 1px solid var(--stroke);
+        box-shadow: -20px 0 40px rgba(15, 23, 42, 0.2);
+        transform: translateX(102%);
+        transition: transform .22s cubic-bezier(.4,0,.2,1);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .drawerOverlay.open .drawer {
+        transform: translateX(0);
+      }
+
+      .drawerHead {
+        padding: 14px;
+        border-bottom: 1px solid var(--stroke2);
+        font-weight: 800;
+      }
+
+      .drawerBody {
+        padding: 14px;
+        overflow: auto;
+        display: grid;
+        gap: 10px;
+      }
+
+      .field label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 5px;
+      }
+
+      .field input,
+      .field textarea,
+      .field select {
+        width: 100%;
+        border: 1px solid var(--stroke);
+        border-radius: 10px;
+        padding: 10px;
+        font: inherit;
+      }
+
+      .toastStack { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+      .toast { padding: 12px 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--stroke); box-shadow: var(--shadow); font-size: 13px; animation: slideUp .2s ease; max-width: 360px; }
+      .toast.error { border-color: var(--danger); background: var(--dangerBg); }
+      @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } }
+
+      @keyframes shimmer { 0% { background-position: -800px 0; } 100% { background-position: 800px 0; } }
+      .skeleton { background: linear-gradient(90deg, var(--stroke2) 25%, rgba(200,200,200,.15) 50%, var(--stroke2) 75%); background-size: 800px 100%; animation: shimmer 1.4s infinite linear; border-radius: 12px; }
+      .skeletonCard { height: 90px; margin-bottom: 12px; }
+      .skeletonLine { height: 14px; width: 60%; margin-bottom: 8px; }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      @media (max-width: 760px) {
+        .tabs {
+          overflow: auto;
+          white-space: nowrap;
+        }
+
+        .row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="header">
+        <div class="titleWrap">
+          <h1 id="appTitle">Classroom Sequence Architect</h1>
+          <div class="subtitle" id="appMeta"></div>
+        </div>
+        <div class="toolbar">
+          <button class="btn" onclick="refreshActiveTab()">Refresh</button>
+        </div>
+      </div>
+
+      <div class="tabsWrap">
+        <div class="tabs" id="tabs"></div>
+      </div>
+
+      <div id="list"></div>
+    </div>
+
+    <div id="drawerOverlay" class="drawerOverlay" onclick="closeDrawer(event)">
+      <div class="drawer" onclick="event.stopPropagation()">
+        <div class="drawerHead">Add Lesson To Sequence</div>
+        <div class="drawerBody">
+          <div class="field">
+            <label>Course</label>
+            <select id="drawerCourse"></select>
+          </div>
+          <div class="field">
+            <label>Custom Date</label>
+            <input id="drawerDate" type="date" />
+          </div>
+          <div class="field">
+            <label>Lesson Title</label>
+            <input id="drawerTitle" type="text" placeholder="e.g. Intro to CAD" />
+          </div>
+          <div class="field">
+            <label>Description / Notes</label>
+            <textarea id="drawerDescription" rows="5" placeholder="Optional notes for Classroom draft"></textarea>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="closeDrawer()">Cancel</button>
+            <button class="btn primary" onclick="submitAddToSequence()">Add To Sequence</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toastStack" class="toastStack"></div>
+
+    <script>
+      const TAB_ICONS = { home: 'home', cw: 'assignment', lessons: 'menu_book', announcements: 'campaign', timetable: 'calendar_today' };
+      const TAB_LABELS = { home: 'Home', cw: 'Classwork', lessons: 'Lessons', announcements: 'Announcements', timetable: 'Timetable' };
+
+      const SUBJECT_COLORS = {
+        Engineering: ['rgba(26,115,232,.95)', 'rgba(20,90,200,.55)'],
+        Design: ['rgba(103,58,183,.95)', 'rgba(60,30,120,.55)'],
+        Food: ['rgba(52,168,83,.95)', 'rgba(18,120,52,.55)'],
+        Textiles: ['rgba(234,67,53,.92)', 'rgba(160,35,28,.55)'],
+        Agriculture: ['rgba(245,158,11,.95)', 'rgba(160,100,0,.55)'],
+        Graphics: ['rgba(0,172,193,.95)', 'rgba(0,110,130,.55)'],
+      };
+
+      const state = {
+        tab: 'home',
+        appName: 'Classroom Sequence Architect',
+        timeZone: '',
+        courses: [],
+        home: { todayDate: '', dayName: '', scheduleByCourse: [] },
+        activeCourseId: '',
+        sequenceCache: {},
+        classworkCache: {},
+        announcementsCache: {},
+        timetableCache: {}
+      };
+
+      function courseHeroStyle(courseName) {
+        const match = Object.keys(SUBJECT_COLORS).find(k =>
+          courseName.toLowerCase().includes(k.toLowerCase()));
+        const [a, b] = match ? SUBJECT_COLORS[match] : ['rgba(26,115,232,.95)', 'rgba(20,90,200,.55)'];
+        return `background: linear-gradient(135deg, ${a}, ${b});`;
+      }
+
+      function showToast(msg, type = 'info', ms = 4000) {
+        const t = document.createElement('div');
+        t.className = `toast ${type}`;
+        t.textContent = msg;
+        document.getElementById('toastStack').appendChild(t);
+        setTimeout(() => t.remove(), ms);
+      }
+
+      function renderSkeletons(count = 6) {
+        const list = document.getElementById('list');
+        let html = '<div>';
+        for (let i = 0; i < count; i++) {
+          html += '<div class="skeleton skeletonCard"></div>';
+        }
+        html += '</div>';
+        list.innerHTML = html;
+      }
+
+      function renderTabs() {
+        const tabs = document.getElementById('tabs');
+        tabs.innerHTML = Object.keys(TAB_LABELS).map(key => {
+          const active = state.tab === key ? 'active' : '';
+          const label = TAB_LABELS[key];
+          return `<button class="tab ${active}" data-tab="${key}"><span class="material-icons" style="font-size:16px;vertical-align:middle">${TAB_ICONS[key]}</span> ${label}</button>`;
+        }).join('');
+
+        tabs.querySelectorAll('.tab').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const t = btn.getAttribute('data-tab');
+            if (!t || state.tab === t) return;
+            state.tab = t;
+            renderTabs();
+            refreshActiveTab();
+          });
+        });
+      }
+
+      function serverCall(fnName, payload) {
+        return new Promise((resolve, reject) => {
+          let runner = google.script.run
+            .withSuccessHandler((resp) => {
+              if (!resp || resp.success !== true) {
+                const message = (resp && resp.error) ? resp.error : 'Unknown server error.';
+                showToast(message, 'error');
+                reject(new Error(message));
+                return;
+              }
+              resolve(resp.data);
+            })
+            .withFailureHandler((err) => {
+              const message = (err && err.message) ? err.message : String(err);
+              showToast(message, 'error');
+              reject(err);
+            });
+
+          if (payload === undefined) {
+            runner[fnName]();
+          } else {
+            runner[fnName](payload);
+          }
+        });
+      }
+
+      function formatDateLabel(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      function getCourseById(courseId) {
+        return state.courses.find(c => String(c.id) === String(courseId));
+      }
+
+      function setHeaderMeta() {
+        document.getElementById('appTitle').textContent = state.appName;
+        const tz = state.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.getElementById('appMeta').textContent = `Timezone: ${tz} | Courses: ${state.courses.length}`;
+      }
+
+      function fillCourseSelectors() {
+        const drawer = document.getElementById('drawerCourse');
+        drawer.innerHTML = state.courses.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        if (state.activeCourseId) drawer.value = state.activeCourseId;
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function renderPeriodProgress(startTime, endTime) {
+        const now = new Date();
+        const [sh, sm] = startTime.split(':').map(Number);
+        const [eh, em] = endTime.split(':').map(Number);
+        const start = sh * 60 + sm, end = eh * 60 + em;
+        const cur = now.getHours() * 60 + now.getMinutes();
+        if (cur < start || cur > end) return '';
+        const pct = Math.min(100, ((cur - start) / (end - start)) * 100).toFixed(1);
+        return `<div class="periodProgress"><div class="periodProgressBar" style="width:${pct}%"></div></div>`;
+      }
+
+      function openCreateDrawer(courseId) {
+        const overlay = document.getElementById('drawerOverlay');
+        overlay.classList.add('open');
+        const dateInput = document.getElementById('drawerDate');
+        if (!dateInput.value) {
+          const today = new Date();
+          const yyyy = today.getFullYear();
+          const mm = String(today.getMonth() + 1).padStart(2, '0');
+          const dd = String(today.getDate()).padStart(2, '0');
+          dateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+        if (courseId) {
+          document.getElementById('drawerCourse').value = courseId;
+        }
+      }
+
+      function closeDrawer(e) {
+        if (e && e.target !== e.currentTarget) return;
+        document.getElementById('drawerOverlay').classList.remove('open');
+      }
+
+      async function submitAddToSequence() {
+        const payload = {
+          courseId: document.getElementById('drawerCourse').value,
+          customDate: document.getElementById('drawerDate').value,
+          title: document.getElementById('drawerTitle').value.trim(),
+          description: document.getElementById('drawerDescription').value.trim()
+        };
+
+        if (!payload.courseId || !payload.customDate) {
+          showToast('Course and custom date are required.', 'error');
+          return;
+        }
+
+        const btns = document.querySelectorAll('.drawer .btn, .drawer .btnSmall');
+        btns.forEach(b => b.disabled = true);
+        try {
+          const data = await serverCall('addToSequence', payload);
+          closeDrawer();
+          showToast(`Lesson inserted. Classroom drafts rebuilt: ${data.classroomUpdatedCount}`, 'info');
+          state.sequenceCache[payload.courseId] = data.lessons || [];
+          await refreshDataCachesAfterMutation(payload.courseId);
+          state.tab = 'lessons';
+          renderTabs();
+          renderLessonsTab(payload.courseId, state.sequenceCache[payload.courseId] || []);
+        } finally {
+          btns.forEach(b => b.disabled = false);
+        }
+      }
+
+      async function refreshDataCachesAfterMutation(courseId) {
+        const [home, seq] = await Promise.all([
+          serverCall('getHomeData'),
+          serverCall('getSequence', { courseId })
+        ]);
+        state.home = home;
+        state.sequenceCache[courseId] = seq.lessons || [];
+      }
+
+      function selectCourseHtml(selectedId, onChangeFnName) {
+        return `<select class="select" id="courseSelect" onchange="${onChangeFnName}(this.value)">
+          ${state.courses.map(c => `<option value="${c.id}" ${String(c.id) === String(selectedId) ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+        </select>`;
+      }
+
+      async function refreshActiveTab() {
+        if (!state.courses.length) {
+          document.getElementById('list').innerHTML = `
+            <div class="emptyState">
+              <span class="material-icons" style="font-size:48px;color:var(--muted)">inbox</span>
+              <p>No active courses found in Classroom.</p>
+            </div>`;
+          return;
+        }
+
+        if (!state.activeCourseId) {
+          state.activeCourseId = state.courses[0].id;
+        }
+
+        if (state.tab === 'home') return loadHomeTab();
+        if (state.tab === 'cw') return loadClassworkTab(state.activeCourseId);
+        if (state.tab === 'lessons') return loadLessonsTab(state.activeCourseId);
+        if (state.tab === 'announcements') return loadAnnouncementsTab(state.activeCourseId);
+        if (state.tab === 'timetable') return loadTimetableTab(state.activeCourseId);
+      }
+
+      function renderHomeTab() {
+        const list = document.getElementById('list');
+        const byCourse = {};
+        (state.home.scheduleByCourse || []).forEach(s => { byCourse[s.courseId] = s.blocks || []; });
+
+        list.innerHTML = `
+          <div class="row">
+            <div>
+              <h3 style="margin:0">Today: ${escapeHtml(state.home.dayName || '')}</h3>
+              <div class="muted">${escapeHtml(formatDateLabel(state.home.todayDate))}</div>
+            </div>
+            <div class="muted">Use arrows on each tile to persist custom ordering</div>
+          </div>
+          <div class="line"></div>
+          <div class="courseGrid">
+            ${state.courses.map((course, idx) => {
+              const blocks = byCourse[course.id] || [];
+              return `
+                <div class="card">
+                  <div class="courseHero" style="${courseHeroStyle(course.name)}">
+                    <p class="courseHeroTitle">${escapeHtml(course.name)}</p>
+                    <div class="courseHeroSub">${escapeHtml(course.subjectCode || '')}</div>
+                  </div>
+                  <div class="cardBody">
+                    <div class="row">
+                      <strong>Periods Today</strong>
+                      <div class="courseActions">
+                        <button class="btnSmall" onclick="moveCourse('${course.id}','up')" ${idx === 0 ? 'disabled' : ''}>↑</button>
+                        <button class="btnSmall" onclick="moveCourse('${course.id}','down')" ${idx === state.courses.length - 1 ? 'disabled' : ''}>↓</button>
+                      </div>
+                    </div>
+                    ${blocks.length ? blocks.map(p => `
+                      <div class="period">
+                        <div class="periodTop">
+                          <span>${escapeHtml(p.periodCode)}</span>
+                          <span>${escapeHtml(p.startTime)}-${escapeHtml(p.endTime)}</span>
+                        </div>
+                        <div class="periodTopic">${escapeHtml(p.topic || 'No sequence topic assigned')}</div>
+                        ${renderPeriodProgress(p.startTime, p.endTime)}
+                      </div>
+                    `).join('') : `<div class="muted" style="margin-top:8px">No timetable periods scheduled today.</div>`}
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>`;
+      }
+
+      async function loadHomeTab() {
+        renderSkeletons(5);
+        const home = await serverCall('getHomeData');
+        state.home = home;
+        renderHomeTab();
+      }
+
+      async function moveCourse(courseId, direction) {
+        const data = await serverCall('moveTile', { courseId, direction });
+        if (data.changed) {
+          state.courses = data.courses || state.courses;
+          showToast('Course order saved.', 'info', 1800);
+        }
+        if (state.tab === 'home') {
+          renderHomeTab();
+        }
+      }
+
+      async function loadClassworkTab(courseId) {
+        renderSkeletons(6);
+        const data = await serverCall('getClasswork', { courseId });
+        state.classworkCache[courseId] = data.items || [];
+        renderClassworkTab(courseId, state.classworkCache[courseId]);
+      }
+
+      function onClassworkCourseChange(newCourseId) {
+        state.activeCourseId = newCourseId;
+        loadClassworkTab(newCourseId);
+      }
+
+      function renderClassworkTab(courseId, items) {
+        const list = document.getElementById('list');
+        list.innerHTML = `
+          <div class="row">
+            <h3 style="margin:0">Classwork</h3>
+            ${selectCourseHtml(courseId, 'onClassworkCourseChange')}
+          </div>
+          <div class="line"></div>
+          ${!items.length ? `<div class="emptyState">
+            <span class="material-icons" style="font-size:48px;color:var(--muted)">inbox</span>
+            <p>No classwork yet for this course.</p> <button class="btnSmall primary" onclick="openCreateDrawer('${courseId}')">Create first lesson</button>
+          </div>` : items.map(item => `
+            <div class="lessonItem">
+              <div><strong>${escapeHtml(item.title || 'Untitled')}</strong></div>
+              <div class="lessonMeta">${escapeHtml(item.state || '')} • ${escapeHtml(item.updateTime || '')}</div>
+              <div class="lessonMeta">${escapeHtml(item.description || '')}</div>
+            </div>`).join('')}
+        `;
+      }
+
+      async function loadLessonsTab(courseId) {
+        renderSkeletons(6);
+        const data = await serverCall('getSequence', { courseId });
+        state.sequenceCache[courseId] = data.lessons || [];
+        renderLessonsTab(courseId, state.sequenceCache[courseId]);
+      }
+
+      function onLessonsCourseChange(newCourseId) {
+        state.activeCourseId = newCourseId;
+        loadLessonsTab(newCourseId);
+      }
+
+      async function syncCourseSequence(courseId) {
+        renderSkeletons(4);
+        const data = await serverCall('syncSequenceToClassroom', { courseId });
+        state.sequenceCache[courseId] = data.lessons || [];
+        showToast(`Classroom sync complete. Drafts rebuilt: ${data.classroomUpdatedCount}`, 'info');
+        renderLessonsTab(courseId, state.sequenceCache[courseId]);
+      }
+
+      function renderLessonsTab(courseId, lessons) {
+        const list = document.getElementById('list');
+        list.innerHTML = `
+          <div class="row">
+            <h3 style="margin:0">Sequences</h3>
+            <div class="row" style="justify-content:flex-end">
+              ${selectCourseHtml(courseId, 'onLessonsCourseChange')}
+              <button class="btn" onclick="openCreateDrawer('${courseId}')">Add To Sequence</button>
+              <button class="btn primary" onclick="syncCourseSequence('${courseId}')">Sync To Classroom</button>
+            </div>
+          </div>
+          <div class="line"></div>
+          ${!lessons.length ? `<div class="emptyState">
+            <span class="material-icons" style="font-size:48px;color:var(--muted)">inbox</span>
+            <p>No lessons sequenced yet for this course.</p>
+            <button class="btnSmall primary" onclick="openCreateDrawer('${courseId}')">Create first lesson</button>
+          </div>` : lessons.map(lesson => `
+            <div class="lessonItem">
+              <div class="row">
+                <strong>#${lesson.lessonNumber} ${escapeHtml(lesson.topic)}</strong>
+                <span class="muted">${escapeHtml(lesson.status || '')}</span>
+              </div>
+              <div class="lessonMeta">${escapeHtml(formatDateLabel(lesson.lessonDate))} • ${escapeHtml(lesson.periodCode)}</div>
+              <div class="lessonMeta">${escapeHtml(lesson.title || '')}</div>
+              ${lesson.description ? `<div class="lessonMeta">${escapeHtml(lesson.description)}</div>` : ''}
+            </div>`).join('')}
+        `;
+      }
+
+      async function loadAnnouncementsTab(courseId) {
+        renderSkeletons(5);
+        const data = await serverCall('getAnnouncements', { courseId });
+        state.announcementsCache[courseId] = data.items || [];
+        renderAnnouncementsTab(courseId, state.announcementsCache[courseId]);
+      }
+
+      function onAnnouncementsCourseChange(newCourseId) {
+        state.activeCourseId = newCourseId;
+        loadAnnouncementsTab(newCourseId);
+      }
+
+      function renderAnnouncementsTab(courseId, items) {
+        const list = document.getElementById('list');
+        list.innerHTML = `
+          <div class="row">
+            <h3 style="margin:0">Announcements</h3>
+            ${selectCourseHtml(courseId, 'onAnnouncementsCourseChange')}
+          </div>
+          <div class="line"></div>
+          ${!items.length ? `<div class="emptyState">
+            <span class="material-icons" style="font-size:48px;color:var(--muted)">inbox</span>
+            <p>No announcements for this course.</p>
+          </div>` : items.map(item => `
+            <div class="lessonItem">
+              <div>${escapeHtml(item.text || '')}</div>
+              <div class="lessonMeta">${escapeHtml(item.state || '')} • ${escapeHtml(item.updateTime || '')}</div>
+            </div>`).join('')}
+        `;
+      }
+
+      async function loadTimetableTab(courseId) {
+        renderSkeletons(4);
+        const data = await serverCall('getTimetable', { courseId });
+        state.timetableCache[courseId] = data.rows || [];
+        renderTimetableTab(courseId, state.timetableCache[courseId]);
+      }
+
+      function onTimetableCourseChange(newCourseId) {
+        state.activeCourseId = newCourseId;
+        loadTimetableTab(newCourseId);
+      }
+
+      function renderTimetableTab(courseId, rows) {
+        const list = document.getElementById('list');
+        list.innerHTML = `
+          <div class="row">
+            <h3 style="margin:0">Timetable</h3>
+            ${selectCourseHtml(courseId, 'onTimetableCourseChange')}
+          </div>
+          <div class="line"></div>
+          ${!rows.length ? `<div class="emptyState">
+            <span class="material-icons" style="font-size:48px;color:var(--muted)">inbox</span>
+            <p>No timetable rows for this course yet.</p>
+          </div>` : rows.map(r => `
+            <div class="lessonItem">
+              <div class="row">
+                <strong>${escapeHtml(r.dayOfWeek)} • ${escapeHtml(r.periodCode)}</strong>
+                <span class="muted">${escapeHtml(r.startTime)} - ${escapeHtml(r.endTime)}</span>
+              </div>
+              ${renderPeriodProgress(r.startTime, r.endTime)}
+            </div>`).join('')}
+        `;
+      }
+
+      async function init() {
+        renderSkeletons(6);
+        try {
+          const data = await serverCall('bootstrapApp');
+          state.appName = data.appName;
+          state.timeZone = data.timeZone;
+          state.courses = data.courses || [];
+          state.home = data.home || state.home;
+          state.activeCourseId = state.courses[0] ? state.courses[0].id : '';
+          setHeaderMeta();
+          fillCourseSelectors();
+          renderTabs();
+          await refreshActiveTab();
+          setInterval(() => {
+            if (state.tab === 'home' || state.tab === 'timetable') {
+              refreshActiveTab();
+            }
+          }, 60000);
+        } catch (err) {
+          document.getElementById('list').innerHTML = `
+            <div class="emptyState">
+              <span class="material-icons" style="font-size:48px;color:var(--muted)">error</span>
+              <p>Unable to load app data.</p>
+            </div>`;
+        }
+      }
+
+      window.openCreateDrawer = openCreateDrawer;
+      window.onClassworkCourseChange = onClassworkCourseChange;
+      window.onLessonsCourseChange = onLessonsCourseChange;
+      window.onAnnouncementsCourseChange = onAnnouncementsCourseChange;
+      window.onTimetableCourseChange = onTimetableCourseChange;
+      window.syncCourseSequence = syncCourseSequence;
+      window.submitAddToSequence = submitAddToSequence;
+      window.moveCourse = moveCourse;
+      window.closeDrawer = closeDrawer;
+      window.refreshActiveTab = refreshActiveTab;
+
+      init();
+    </script>
+  </body>
+</html>
