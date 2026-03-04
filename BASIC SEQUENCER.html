@@ -341,7 +341,117 @@
         opacity: 1;
       }
     }
-    
+
+    /* ===== EDIT LESSON DRAWER ===== */
+    .edit-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(17,24,39,.25);
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s ease;
+      z-index: 100;
+    }
+    .edit-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .edit-drawer {
+      position: fixed;
+      top: 0; right: 0;
+      height: 100%;
+      width: min(520px, 96vw);
+      background: #ffffff;
+      border-left: 1px solid var(--stroke);
+      box-shadow: -8px 0 32px rgba(16,24,40,.12);
+      transform: translateX(100%);
+      transition: transform .22s cubic-bezier(.4,0,.2,1);
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+    }
+    .edit-drawer.open {
+      transform: translateX(0);
+    }
+    .edit-drawer-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--stroke2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 750;
+    }
+    .edit-drawer-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .edit-drawer-footer {
+      padding: 14px 18px;
+      border-top: 1px solid var(--stroke2);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: rgba(255,255,255,.96);
+    }
+    .edit-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .edit-field label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .edit-field input,
+    .edit-field textarea,
+    .edit-field select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: rgba(13,27,55,.02);
+      outline: none;
+      resize: vertical;
+      min-height: unset;
+    }
+    .edit-field input:focus,
+    .edit-field textarea:focus,
+    .edit-field select:focus {
+      border-color: rgba(26,115,232,.45);
+      box-shadow: 0 0 0 3px rgba(26,115,232,.12);
+    }
+    .edit-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .edit-status {
+      font-size: 13px;
+      color: var(--danger);
+      min-height: 18px;
+      padding: 4px 0;
+    }
+    .edit-note {
+      font-size: 12px;
+      color: var(--muted2);
+      padding: 10px 12px;
+      background: rgba(26,115,232,.04);
+      border: 1px solid rgba(26,115,232,.12);
+      border-radius: 10px;
+      line-height: 1.5;
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .table-container {
@@ -355,6 +465,10 @@
       .next-available {
         flex-direction: column;
         align-items: flex-start;
+      }
+
+      .edit-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -381,7 +495,7 @@
       <p style="font-size:13px; color:var(--muted); margin-top:0;">
         Configure term start/end dates and whether each term begins on Week A or Week B.
         These settings are shared with the main app and are used to map 10‑day cycle days
-        (Day 1–10) onto real calendar dates for “Next Available” calculations.
+        (Day 1–10) onto real calendar dates for "Next Available" calculations.
       </p>
       <div id="termSettingsRows" style="display:flex; flex-direction:column; gap:8px; margin-top:8px;"></div>
       <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end;">
@@ -400,8 +514,90 @@
     </div>
   </main>
   
-  <!-- STATUS MESSAGE -->
+  <!-- STATUS MESSAGE (toast) -->
   <div id="statusMessage" class="status-message"></div>
+
+  <!-- ================================================================
+       EDIT LESSON DRAWER
+       ================================================================ -->
+  <div id="editDrawerOverlay" class="edit-overlay" onclick="closeEditDrawer()"></div>
+
+  <div id="editDrawer" class="edit-drawer" aria-modal="true" role="dialog" aria-label="Edit Lesson">
+    <div class="edit-drawer-header">
+      <span>✏️ Edit Lesson</span>
+      <button class="small" type="button" onclick="closeEditDrawer()">✕ Close</button>
+    </div>
+
+    <div class="edit-drawer-body">
+      <!-- Hidden lesson ID – required so apiSaveLesson performs an UPDATE -->
+      <input type="hidden" id="editLessonId">
+
+      <div class="edit-note">
+        ℹ️ Edit the fields below and click <strong>Save Changes</strong>. The assign date and
+        time you set here are kept exactly as entered — no timetable bumping will occur.
+      </div>
+
+      <!-- Title -->
+      <div class="edit-field">
+        <label for="editLessonTitle">Title</label>
+        <input type="text" id="editLessonTitle" placeholder="e.g. Lesson 3: Introduction to Energy">
+      </div>
+
+      <!-- Assign Date / Time -->
+      <div class="edit-row">
+        <div class="edit-field">
+          <label for="editLessonAssignDate">Assign Date</label>
+          <input type="date" id="editLessonAssignDate">
+        </div>
+        <div class="edit-field">
+          <label for="editLessonAssignTime">Assign Time</label>
+          <input type="time" id="editLessonAssignTime">
+        </div>
+      </div>
+
+      <!-- Due Date / Time -->
+      <div class="edit-row">
+        <div class="edit-field">
+          <label for="editLessonDueDate">Due Date</label>
+          <input type="date" id="editLessonDueDate">
+        </div>
+        <div class="edit-field">
+          <label for="editLessonDueTime">Due Time</label>
+          <input type="time" id="editLessonDueTime">
+        </div>
+      </div>
+
+      <!-- Points -->
+      <div class="edit-field">
+        <label for="editLessonPoints">Points</label>
+        <input type="number" id="editLessonPoints" min="0" step="1" placeholder="0" style="max-width:160px;">
+      </div>
+
+      <!-- Topic text (read-only info) -->
+      <div class="edit-field">
+        <label for="editLessonTopic">Topic (auto-generated — shown read-only)</label>
+        <input type="text" id="editLessonTopic" placeholder="Will be rebuilt from assign date on save" readonly
+               style="opacity:.7; cursor:default;">
+      </div>
+
+      <!-- Description -->
+      <div class="edit-field">
+        <label for="editLessonDesc">Description / Instructions</label>
+        <textarea id="editLessonDesc" rows="6" placeholder="Lesson description or instructions…"></textarea>
+      </div>
+
+      <!-- Inline status / error -->
+      <div id="editLessonStatus" class="edit-status"></div>
+    </div>
+
+    <div class="edit-drawer-footer">
+      <button class="small" type="button" onclick="closeEditDrawer()">Cancel</button>
+      <button id="saveEditBtn" class="small primary" type="button" onclick="saveEditLesson()">
+        💾 Save Changes
+      </button>
+    </div>
+  </div>
+  <!-- END EDIT LESSON DRAWER -->
   
   <script>
     // ========================================================================
@@ -559,8 +755,6 @@
 
       const payload = {
         termDates: termDates,
-        // Preserve any other settings (like subject mappings) on the server;
-        // apiSaveSettings will overwrite the whole object, so we fetch first.
       };
 
       google.script.run
@@ -578,7 +772,6 @@
             .apiSaveSettings(merged);
         })
         .withFailureHandler(() => {
-          // If we cannot load existing, just save our payload
           google.script.run
             .withSuccessHandler(() => {
               SettingsManagerSeq.termDates = termDates;
@@ -668,7 +861,6 @@
       const timetable = state.timetable[classCode] || [];
       const lessons = state.sequence;
       
-      // Build timetable slots display
       const slotsHTML = timetable
         .map(slot => {
           const dayNum = Number(slot.day);
@@ -686,7 +878,6 @@
         })
         .join('');
       
-      // Calculate next available
       const nextAvailable = calculateNextAvailable();
       
       let html = `
@@ -774,7 +965,7 @@
               <td><span class="status-badge ${statusClass}">${statusText}</span></td>
               <td class="actions">
                 ${lesson.status === 'published' ? 
-                  `<button class="small" onclick="viewInClassroom('${lesson.classworkId}')">View</button>
+                  `<button class="small" onclick="editLesson('${lesson.id}')">Edit</button>
                    <button class="small danger" onclick="deleteLesson('${lesson.id}', true)">Delete</button>` :
                   `<button class="small" onclick="editLesson('${lesson.id}')">Edit</button>
                    <button class="small danger" onclick="deleteLesson('${lesson.id}', false)">Delete</button>`
@@ -811,11 +1002,142 @@
       // TODO: Open create drawer
     }
     
+    // -------------------------------------------------------------------------
+    // editLesson — opens the edit drawer pre-populated with the lesson's data
+    // -------------------------------------------------------------------------
     function editLesson(lessonId) {
-      showStatus('Edit lesson feature coming in Phase 2!', 'success');
-      // TODO: Open edit drawer with lesson data
+      const lesson = state.sequence.find(function(l) { return l.id === lessonId; });
+      if (!lesson) {
+        showError('Lesson not found in current sequence.');
+        return;
+      }
+
+      // Populate form fields
+      document.getElementById('editLessonId').value        = lesson.id || '';
+      document.getElementById('editLessonTitle').value     = lesson.title || '';
+      document.getElementById('editLessonAssignDate').value = lesson.assignDate || '';
+      document.getElementById('editLessonAssignTime').value = lesson.assignTime || '';
+      document.getElementById('editLessonDueDate').value   = lesson.dueDate || '';
+      document.getElementById('editLessonDueTime').value   = lesson.dueTime || '';
+      document.getElementById('editLessonPoints').value    = (lesson.points != null && lesson.points !== '') ? lesson.points : '';
+      document.getElementById('editLessonTopic').value     = lesson.topicText || '';
+      document.getElementById('editLessonDesc').value      = lesson.description || '';
+      document.getElementById('editLessonStatus').textContent = '';
+      document.getElementById('saveEditBtn').disabled      = false;
+
+      // Open overlay + drawer
+      document.getElementById('editDrawerOverlay').classList.add('open');
+      document.getElementById('editDrawer').classList.add('open');
+      document.getElementById('editLessonTitle').focus();
     }
-    
+
+    // -------------------------------------------------------------------------
+    // closeEditDrawer — closes the drawer and clears status
+    // -------------------------------------------------------------------------
+    function closeEditDrawer() {
+      document.getElementById('editDrawerOverlay').classList.remove('open');
+      document.getElementById('editDrawer').classList.remove('open');
+      document.getElementById('editLessonStatus').textContent = '';
+    }
+
+    // -------------------------------------------------------------------------
+    // saveEditLesson — collects form data and calls apiSaveLesson (UPDATE path)
+    //
+    // KEY DESIGN DECISIONS:
+    //   • lesson.id is always passed  → apiSaveLesson treats this as an UPDATE
+    //   • useTimetableTime : false    → assignTime is taken as-is from the form
+    //   • skipCustomDateBump : true   → no cascade-bump of other lessons
+    //   • preventEquivalentMatch: true → no silent re-match that could strip the id
+    //   • preserveAssignDate : true   → the explicit date entered by the user is kept
+    // -------------------------------------------------------------------------
+    function saveEditLesson() {
+      const classCode = state.selectedClass;
+      if (!classCode) {
+        showError('No class selected.');
+        return;
+      }
+
+      const lessonId   = document.getElementById('editLessonId').value.trim();
+      const title      = document.getElementById('editLessonTitle').value.trim();
+      const assignDate = document.getElementById('editLessonAssignDate').value.trim();
+      const assignTime = document.getElementById('editLessonAssignTime').value.trim();
+      const dueDate    = document.getElementById('editLessonDueDate').value.trim();
+      const dueTime    = document.getElementById('editLessonDueTime').value.trim();
+      const pointsRaw  = document.getElementById('editLessonPoints').value.trim();
+      const description = document.getElementById('editLessonDesc').value;
+      const statusEl   = document.getElementById('editLessonStatus');
+
+      // ---- Client-side validation ----
+      if (!lessonId) {
+        statusEl.textContent = 'Error: lesson ID is missing. Please close and re-open the drawer.';
+        return;
+      }
+      if (!title) {
+        statusEl.textContent = 'Title is required.';
+        document.getElementById('editLessonTitle').focus();
+        return;
+      }
+      if (!assignDate) {
+        statusEl.textContent = 'Assign date is required.';
+        document.getElementById('editLessonAssignDate').focus();
+        return;
+      }
+      if (!assignTime) {
+        statusEl.textContent = 'Assign time is required.';
+        document.getElementById('editLessonAssignTime').focus();
+        return;
+      }
+
+      // ---- Retrieve existing lesson for preserved fields ----
+      const existing = state.sequence.find(function(l) { return l.id === lessonId; }) || {};
+
+      const lessonData = {
+        id          : lessonId,
+        title       : title,
+        assignDate  : assignDate,
+        assignTime  : assignTime,
+        dueDate     : dueDate  || '',
+        dueTime     : dueTime  || '',
+        points      : (pointsRaw !== '' && !isNaN(Number(pointsRaw))) ? Number(pointsRaw) : 0,
+        description : description,
+        // Preserve fields that are managed server-side or not editable here
+        status      : existing.status      || 'scheduled',
+        classworkId : existing.classworkId || null,
+        materials   : existing.materials   || [],
+        topicText   : existing.topicText   || '',
+        // Flags that govern server-side bump / resequence behaviour
+        useTimetableTime     : false,   // honour the exact time from the form
+        skipCustomDateBump   : true,    // do NOT cascade-bump other lessons
+        preventEquivalentMatch: true,   // do NOT silently match another lesson
+        preserveAssignDate   : true     // keep the date the user entered
+      };
+
+      statusEl.textContent = 'Saving…';
+      document.getElementById('saveEditBtn').disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('saveEditBtn').disabled = false;
+          if (!result || !result.success) {
+            statusEl.textContent = '❌ ' + (result && result.error ? result.error : 'Unknown error from server.');
+            return;
+          }
+          statusEl.textContent = '';
+          closeEditDrawer();
+          showStatus('✅ Lesson saved successfully!', 'success');
+          // Reload the sequence to reflect server-side renumbering
+          loadClassSequence();
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('saveEditBtn').disabled = false;
+          statusEl.textContent = '❌ Failed: ' + (err && err.message ? err.message : String(err));
+        })
+        .apiSaveLesson(classCode, lessonData);
+    }
+
+    // -------------------------------------------------------------------------
+    // deleteLesson
+    // -------------------------------------------------------------------------
     function deleteLesson(lessonId, isPublished) {
       if (isPublished) {
         const confirmed = confirm(
@@ -839,7 +1161,6 @@
     function onDeleteSuccess(result) {
       if (!result.success) {
         if (result.needsConfirmation) {
-          // Show confirmation dialog
           const confirmed = confirm(result.message + '\n\nContinue?');
           if (confirmed) {
             deleteLesson(result.lesson.id, true);
